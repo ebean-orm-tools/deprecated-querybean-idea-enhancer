@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>org.avaje.ebean.typequery.enhancer</id>
   <name>Ebean ORM Type Query Enhancer</name>
-  <version>0.1.6</version>
+  <version>1.2.1</version>
   <vendor url="http://ebean-orm.github.io/">Rob Bygrave</vendor>
   <depends>com.intellij.modules.java</depends>
 
@@ -11,7 +11,7 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      <b>1.1.1</b> IDEA 13+ avaje-ebeanorm-typequery-agent version 1.1.1<br>
+      <b>1.2.1</b> IDEA 13+ avaje-ebeanorm-typequery-agent version 1.2.1<br>
     ]]>
   </change-notes>
 
