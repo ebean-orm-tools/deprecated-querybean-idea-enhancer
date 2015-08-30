@@ -1,22 +1,3 @@
-/*
- * Copyright 2009 Mario Ivankovits
- *
- *     This file is part of Ebean-idea-plugin.
- *
- *     Ebean-idea-plugin is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     Ebean-idea-plugin is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with Ebean-idea-plugin.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 package org.avaje.idea.typequery.plugin;
 
 import com.intellij.openapi.compiler.CompileContext;
@@ -48,7 +29,7 @@ import java.util.Set;
  */
 public class TypeQueryEnhancementTask {
 
-  private static final int DEBUG = 9;
+  private static final int DEBUG = 2;
 
   private final CompileContext compileContext;
 
@@ -77,8 +58,13 @@ public class TypeQueryEnhancementTask {
   }
 
 
+  /**
+   * Find the type query manifest files externally to the agent as classLoader getResources does
+   * not work for the agent when run in the IDEA plugin.
+   *
+   * @return The packages containing type query beans (this is required for the enhancement).
+   */
   private Set<String> findManifests() {
-
 
     Project project = compileContext.getProject();
     GlobalSearchScope searchScope = GlobalSearchScope.allScope(compileContext.getProject());
@@ -95,10 +81,9 @@ public class TypeQueryEnhancementTask {
   private void doProcess() throws IOException, IllegalClassFormatException {
 
     Set<String> packages = findManifests();
-    compileContext.addMessage(CompilerMessageCategory.INFORMATION, "Ebean type query enhancement started ... packages:"+packages, null, -1, -1);
+    compileContext.addMessage(CompilerMessageCategory.INFORMATION, "Ebean type query enhancement started with packages:"+packages, null, -1, -1);
 
     IdeaClassBytesReader classBytesReader = new IdeaClassBytesReader(compileContext, compiledClasses);
-
     IdeaClassLoader classLoader = new IdeaClassLoader(Thread.currentThread().getContextClassLoader(), classBytesReader);
 
     final Transformer transformer = new Transformer("debug=" + DEBUG, classLoader, packages);

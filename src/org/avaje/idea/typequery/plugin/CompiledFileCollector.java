@@ -104,14 +104,6 @@ public class CompiledFileCollector implements CompilationStatusListener {
       this.className = className;
     }
 
-    public File getFile() {
-      return file;
-    }
-
-    public String getClassName() {
-      return className;
-    }
-
     @Override
     public String toString() {
       return "CompiledFile{" +
