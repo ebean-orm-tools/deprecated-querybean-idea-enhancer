@@ -1,0 +1,48 @@
+<idea-plugin version="2">
+  <id>org.avaje.ebean.typequery.enhancer</id>
+  <name>Ebean ORM Type Query Enhancer</name>
+  <version>0.1.6</version>
+  <vendor url="http://ebean-orm.github.io/">Rob Bygrave</vendor>
+  <depends>com.intellij.modules.java</depends>
+
+  <description><![CDATA[
+      Post-compile enhancement for Ebean ORM type query beans.<br>
+      Type query beans allow building Ebean ORM queries using type safe query criteria.
+    ]]></description>
+
+  <change-notes><![CDATA[
+      <b>1.1.1</b> IDEA 13+ avaje-ebeanorm-typequery-agent version 1.1.1<br>
+    ]]>
+  </change-notes>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="131"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <component>
+      <implementation-class>org.avaje.idea.typequery.plugin.EnhancementActionComponent</implementation-class>
+      <interface-class>org.avaje.idea.typequery.plugin.EnhancementActionComponent</interface-class>
+      <!-- For configuration save in iws files -->
+      <option name="workspace" value="true"/>
+    </component>
+  </project-components>
+
+  <actions>
+    <action class="org.avaje.idea.typequery.plugin.ToggleEnhanceAction"
+            text="Ebean ORM Type Query Enhancement"
+            description="Type Query enhancement for Ebean ORM - http://avaje-metric.github.io"
+            id="org.avaje.idea.typequery.plugin.ToggleEnhanceAction">
+      <add-to-group anchor="after" group-id="BuildMenu" relative-to-action="Compile"/>
+      <add-to-group anchor="after" group-id="ProjectViewPopupMenu" relative-to-action="Compile"/>
+    </action>
+  </actions>
+
+</idea-plugin>
