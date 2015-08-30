@@ -5,6 +5,7 @@
 target/
 logs/
 log/
+out/
 
 # Intellij project files
 *.iml
