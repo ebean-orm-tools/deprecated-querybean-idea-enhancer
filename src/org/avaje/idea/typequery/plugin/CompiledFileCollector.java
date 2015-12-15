@@ -20,12 +20,12 @@ package org.avaje.idea.typequery.plugin;
 
 import com.intellij.openapi.compiler.CompilationStatusListener;
 import com.intellij.openapi.compiler.CompileContext;
+import com.intellij.openapi.compiler.CompilerMessageCategory;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class CompiledFileCollector implements CompilationStatusListener {
 
-  private Map<String, File> compiledClasses = new HashMap<>();
+  private Map<String, CompiledFile> compiledClasses = new HashMap<>();
 
   @Override
   public void fileGenerated(String outputRoot, String relativePath) {
@@ -41,8 +41,12 @@ public class CompiledFileCollector implements CompilationStatusListener {
     // Collect all valid compiled '.class' files
     CompiledFile compiledFile = createCompiledFile(outputRoot, relativePath);
     if (compiledFile != null) {
-      this.compiledClasses.put(compiledFile.className, compiledFile.file);
+      addClass(compiledFile);
     }
+  }
+
+  private void addClass(CompiledFile compiledFile) {
+    this.compiledClasses.put(compiledFile.className, compiledFile);
   }
 
   private CompiledFile createCompiledFile(String outputRoot, String relativePath) {
@@ -52,45 +56,47 @@ public class CompiledFileCollector implements CompilationStatusListener {
     }
 
     File file = new File(outputRoot, relativePath);
-    if (!file.exists() || !isJavaClass(file)) {
+    if (!file.exists()) {
       return null;
     }
 
     String className = resolveClassName(relativePath);
-    return new CompiledFile(file, className);
+    return new CompiledFile(file, className, outputRoot);
   }
 
   /**
    * Given a content path and a class file path, resolve the fully qualified class name
    */
-  private String resolveClassName(String relativePath) {
+  private static String resolveClassName(String relativePath) {
     int extensionPos = relativePath.lastIndexOf('.');
     return relativePath.substring(0, extensionPos).replace('/', '.');
-  }
-
-  /**
-   * Check if the file is a java class by peeking the first two magic bytes and see if we need a 0xCAFE ;-)
-   */
-  private boolean isJavaClass(File file) {
-    try (InputStream is = new FileInputStream(file)) {
-      byte[] buf = new byte[2];
-      int read = is.read(buf, 0, 2);
-      if (read < buf.length) {
-        return false;
-      }
-      return buf[0] == (byte) 0xCA && buf[1] == (byte) 0xFE;
-
-    } catch (IOException e) {
-      e.printStackTrace();
-      return false;
-    }
   }
 
   @Override
   public void compilationFinished(boolean aborted, int errors, int warnings, CompileContext compileContext) {
 
-    new TypeQueryEnhancementTask(compileContext, compiledClasses).process();
+
+    Map<String,File> asFileMap = new LinkedHashMap<>();
+
+    Collection<CompiledFile> values = compiledClasses.values();
+    for (CompiledFile value : values) {
+      addEntry(asFileMap, value);
+      CompiledFile qb = value.toQueryBean();
+      if (qb != null) {
+        addEntry(asFileMap, qb);
+      }
+      CompiledFile assocBean = value.toQueryAssocBean();
+      if (assocBean != null) {
+        addEntry(asFileMap, assocBean);
+      }
+    }
+
+    new TypeQueryEnhancementTask(compileContext, asFileMap).process();
     this.compiledClasses = new HashMap<>();
+  }
+
+  private void addEntry(Map<String, File> asFileMap, CompiledFile value) {
+    asFileMap.put(value.className, value.file);
   }
 
   public static class CompiledFile {
@@ -98,18 +104,66 @@ public class CompiledFileCollector implements CompilationStatusListener {
     private final File file;
 
     private final String className;
+    private final String pkgDir;
+    private final String shortName;
+    private final String outputRoot;
 
     private CompiledFile(File file, String className) {
       this.file = file;
       this.className = className;
+      this.outputRoot = null;
+      this.pkgDir = null;
+      this.shortName = null;
+    }
+
+    private CompiledFile(File file, String className, String outputRoot) {
+      this.file = file;
+      this.className = className;
+      this.outputRoot = outputRoot;
+
+      int pos = className.lastIndexOf('.');
+      if (pos == -1) {
+        this.pkgDir = null;
+        this.shortName = null;
+      } else {
+        this.pkgDir = className.substring(0, pos).replace('.','/');
+        this.shortName = className.substring(pos+1);
+      }
+
+    }
+
+    /**
+     * Return a query bean (or null) based on naming convention.
+     */
+    CompiledFile toQueryBean() {
+      if (pkgDir != null) {
+        return getFile(pkgDir+"/query/Q"+shortName+".class");
+      }
+      return null;
+    }
+
+    /**
+     * Return a assoc query bean (or null) based on naming convention.
+     */
+    CompiledFile toQueryAssocBean() {
+      if (pkgDir != null) {
+        return getFile(pkgDir+"/query/assoc/QAssoc"+shortName+".class");
+      }
+      return null;
+    }
+
+    private CompiledFile getFile(String assocClassName) {
+
+      File file = new File(outputRoot, assocClassName);
+      if (file.exists()) {
+        return new CompiledFile(file, resolveClassName(assocClassName));
+      }
+      return null;
     }
 
     @Override
     public String toString() {
-      return "CompiledFile{" +
-        "file=" + file +
-        ", className='" + className + '\'' +
-        '}';
+      return "CompiledFile[file:" + file +"  className:" + className + "]";
     }
   }
 }

@@ -2,6 +2,7 @@ package org.avaje.idea.typequery.plugin;
 
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -16,12 +17,15 @@ import org.avaje.ebean.typequery.agent.Transformer;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.instrument.IllegalClassFormatException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * This task actually hand all successfully compiled classes over to the Ebean Type Query agent
@@ -43,12 +47,12 @@ public class TypeQueryEnhancementTask {
   public void process() {
     try {
       ActionRunner.runInsideWriteAction(
-        new ActionRunner.InterruptibleRunnable() {
-          @Override
-          public void run() throws Exception {
-            doProcess();
+          new ActionRunner.InterruptibleRunnable() {
+            @Override
+            public void run() throws Exception {
+              doProcess();
+            }
           }
-        }
       );
     } catch (Exception e) {
       e.printStackTrace();
@@ -56,7 +60,6 @@ public class TypeQueryEnhancementTask {
       compileContext.addMessage(CompilerMessageCategory.ERROR, e.getClass().getName() + ":" + e.getMessage() + msg, null, -1, -1);
     }
   }
-
 
   /**
    * Find the type query manifest files externally to the agent as classLoader getResources does
@@ -66,22 +69,54 @@ public class TypeQueryEnhancementTask {
    */
   private Set<String> findManifests() {
 
+    AgentManifestReader manifestReader = new AgentManifestReader();
+
+    // read from the module output directories, only affected ones though :(
+    // we do this as generated ebean-typequery.mf not found via search
+    Module[] affectedModules = compileContext.getCompileScope().getAffectedModules();
+    for (Module module : affectedModules) {
+      VirtualFile outputDirectory = compileContext.getModuleOutputDirectoryForTests(module);
+      if (outputDirectory != null) {
+        compileContext.addMessage(CompilerMessageCategory.INFORMATION, "... read from module outputDirectory:" + outputDirectory, null, -1, -1);
+        VirtualFile mf = outputDirectory.findFileByRelativePath("META-INF/ebean-typequery.mf");
+        if (mf != null) {
+          try {
+            readManifest(manifestReader, mf.getInputStream());
+          } catch (IOException e) {
+            compileContext.addMessage(CompilerMessageCategory.ERROR, "Error reading META-INF/ebean-typequery.mf from " + outputDirectory + " error:" + e, null, -1, -1);
+          }
+        }
+      }
+    }
+
     Project project = compileContext.getProject();
     GlobalSearchScope searchScope = GlobalSearchScope.allScope(compileContext.getProject());
 
-    AgentManifestReader manifestReader = new AgentManifestReader();
-
+    // read ebean-typequery.mf via project search
     PsiFile[] files = FilenameIndex.getFilesByName(project, "ebean-typequery.mf", searchScope);
-    for (int i = 0; i <files.length ; i++) {
+    for (int i = 0; i < files.length; i++) {
       manifestReader.addRaw(files[i].getText());
     }
     return manifestReader.getPackages();
   }
 
+  /**
+   * Read the packages from the manifest file.
+   */
+  private void readManifest(AgentManifestReader manifestReader, InputStream is) throws IOException {
+    Manifest man = new Manifest(is);
+    Attributes attributes = man.getMainAttributes();
+    String packages = attributes.getValue("packages");
+    if (packages != null) {
+      manifestReader.addRaw(packages);
+    }
+  }
+
+
   private void doProcess() throws IOException, IllegalClassFormatException {
 
     Set<String> packages = findManifests();
-    compileContext.addMessage(CompilerMessageCategory.INFORMATION, "Ebean type query enhancement started with packages:"+packages, null, -1, -1);
+    compileContext.addMessage(CompilerMessageCategory.INFORMATION, "Ebean type query enhancement using packages:" + packages, null, -1, -1);
 
     IdeaClassBytesReader classBytesReader = new IdeaClassBytesReader(compileContext, compiledClasses);
     IdeaClassLoader classLoader = new IdeaClassLoader(Thread.currentThread().getContextClassLoader(), classBytesReader);
