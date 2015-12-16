@@ -3,6 +3,7 @@ package org.avaje.idea.typequery.plugin;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -71,11 +72,13 @@ public class TypeQueryEnhancementTask {
 
     AgentManifestReader manifestReader = new AgentManifestReader();
 
-    // read from the module output directories, only affected ones though :(
-    // we do this as generated ebean-typequery.mf not found via search
-    Module[] affectedModules = compileContext.getCompileScope().getAffectedModules();
-    for (Module module : affectedModules) {
-      VirtualFile outputDirectory = compileContext.getModuleOutputDirectoryForTests(module);
+    // read from the module output directories,  we do this as generated
+    // ebean-typequery.mf is often not found via search
+    ModuleManager moduleManager = ModuleManager.getInstance(compileContext.getProject());
+    Module[] modules = moduleManager.getModules();
+
+    for (Module module : modules) {
+      VirtualFile outputDirectory = compileContext.getModuleOutputDirectory(module);
       if (outputDirectory != null) {
         //compileContext.addMessage(CompilerMessageCategory.INFORMATION, "... read from module outputDirectory:" + outputDirectory, null, -1, -1);
         VirtualFile mf = outputDirectory.findFileByRelativePath("META-INF/ebean-typequery.mf");
@@ -95,6 +98,7 @@ public class TypeQueryEnhancementTask {
     // read ebean-typequery.mf via project search
     PsiFile[] files = FilenameIndex.getFilesByName(project, "ebean-typequery.mf", searchScope);
     for (int i = 0; i < files.length; i++) {
+      //compileContext.addMessage(CompilerMessageCategory.INFORMATION, "... found by search:" + files[i], null, -1, -1);
       manifestReader.addRaw(files[i].getText());
     }
     return manifestReader.getPackages();
