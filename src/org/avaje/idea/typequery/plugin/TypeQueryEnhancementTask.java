@@ -77,7 +77,7 @@ public class TypeQueryEnhancementTask {
     for (Module module : affectedModules) {
       VirtualFile outputDirectory = compileContext.getModuleOutputDirectoryForTests(module);
       if (outputDirectory != null) {
-        compileContext.addMessage(CompilerMessageCategory.INFORMATION, "... read from module outputDirectory:" + outputDirectory, null, -1, -1);
+        //compileContext.addMessage(CompilerMessageCategory.INFORMATION, "... read from module outputDirectory:" + outputDirectory, null, -1, -1);
         VirtualFile mf = outputDirectory.findFileByRelativePath("META-INF/ebean-typequery.mf");
         if (mf != null) {
           try {
@@ -116,7 +116,7 @@ public class TypeQueryEnhancementTask {
   private void doProcess() throws IOException, IllegalClassFormatException {
 
     Set<String> packages = findManifests();
-    compileContext.addMessage(CompilerMessageCategory.INFORMATION, "Ebean type query enhancement using packages:" + packages, null, -1, -1);
+    compileContext.addMessage(CompilerMessageCategory.INFORMATION, "Ebean Query bean enhancement using packages:" + packages, null, -1, -1);
 
     IdeaClassBytesReader classBytesReader = new IdeaClassBytesReader(compileContext, compiledClasses);
     IdeaClassLoader classLoader = new IdeaClassLoader(Thread.currentThread().getContextClassLoader(), classBytesReader);
@@ -137,7 +137,7 @@ public class TypeQueryEnhancementTask {
 
     ProgressIndicator progressIndicator = compileContext.getProgressIndicator();
     progressIndicator.setIndeterminate(true);
-    progressIndicator.setText("Ebean type query enhancement");
+    progressIndicator.setText("Ebean query bean enhancement");
 
     InputStreamTransform isTransform = new InputStreamTransform(transformer, classLoader);
 
@@ -151,13 +151,13 @@ public class TypeQueryEnhancementTask {
       if (transformed != null) {
         VirtualFile outputFile = VfsUtil.findFileByIoFile(file, true);
         if (outputFile == null) {
-          compileContext.addMessage(CompilerMessageCategory.ERROR, "Ebean type query - outputFile not found writing " + className, null, -1, -1);
+          compileContext.addMessage(CompilerMessageCategory.ERROR, "Ebean query bean - outputFile not found writing " + className, null, -1, -1);
         } else {
           outputFile.setBinaryContent(transformed);
         }
       }
     }
 
-    compileContext.addMessage(CompilerMessageCategory.INFORMATION, "Ebean type query enhancement complete!", null, -1, -1);
+    compileContext.addMessage(CompilerMessageCategory.INFORMATION, "Ebean query bean enhancement complete!", null, -1, -1);
   }
 }

@@ -1,16 +1,17 @@
 <idea-plugin version="2">
   <id>org.avaje.ebean.typequery.enhancer</id>
-  <name>Ebean ORM Type Query Enhancer</name>
-  <version>1.5.1</version>
+  <name>Ebean ORM Query Bean Enhancer</name>
+  <version>2.1.1</version>
   <vendor url="http://ebean-orm.github.io/">Rob Bygrave</vendor>
   <depends>com.intellij.modules.java</depends>
 
   <description><![CDATA[
-      Post-compile enhancement for Ebean ORM type query beans.<br>
-      Type query beans allow building Ebean ORM queries using type safe query criteria.
+      Post-compile enhancement for Ebean ORM 'Query beans'.<br>
+      'Query beans' allow building queries using type safe query criteria.
     ]]></description>
 
   <change-notes><![CDATA[
+      <b>2.1.1</b> Support querybean-generator (via java annotation processing), Rename to 'QueryBean'<br>
       <b>1.5.1</b> Fix issue when using Spring boot class loading<br>
       <b>1.4.1</b> Adds support for select()/fetch() alias use of type query beans<br>
       <b>1.3.1</b> IDEA 13+ avaje-ebeanorm-typequery-agent version 1.3.1<br>
@@ -39,8 +40,8 @@
 
   <actions>
     <action class="org.avaje.idea.typequery.plugin.ToggleEnhanceAction"
-            text="Ebean ORM Type Query Enhancement"
-            description="Type Query enhancement for Ebean ORM - http://avaje-metric.github.io"
+            text="Ebean ORM Query bean Enhancement"
+            description="Query bean enhancement for Ebean ORM - http://avaje-metric.github.io"
             id="org.avaje.idea.typequery.plugin.ToggleEnhanceAction">
       <add-to-group anchor="after" group-id="BuildMenu" relative-to-action="Compile"/>
       <add-to-group anchor="after" group-id="ProjectViewPopupMenu" relative-to-action="Compile"/>
