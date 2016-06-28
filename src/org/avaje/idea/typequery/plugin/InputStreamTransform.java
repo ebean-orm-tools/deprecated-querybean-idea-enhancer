@@ -1,6 +1,6 @@
 package org.avaje.idea.typequery.plugin;
 
-import org.avaje.ebean.typequery.agent.Transformer;
+import org.avaje.ebean.typequery.agent.QueryBeanTransformer;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,11 +17,11 @@ import java.lang.instrument.IllegalClassFormatException;
  */
 public class InputStreamTransform {
 
-  private final Transformer transformer;
+  private final QueryBeanTransformer transformer;
 
   private final ClassLoader classLoader;
 
-  public InputStreamTransform(Transformer transformer, ClassLoader classLoader) {
+  public InputStreamTransform(QueryBeanTransformer transformer, ClassLoader classLoader) {
     this.transformer = transformer;
     this.classLoader = classLoader;
   }

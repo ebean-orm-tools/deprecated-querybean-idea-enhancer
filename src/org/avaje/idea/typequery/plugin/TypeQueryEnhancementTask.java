@@ -13,7 +13,7 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.ActionRunner;
 import org.avaje.ebean.typequery.agent.AgentManifestReader;
-import org.avaje.ebean.typequery.agent.Transformer;
+import org.avaje.ebean.typequery.agent.QueryBeanTransformer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -125,7 +125,7 @@ public class TypeQueryEnhancementTask {
     IdeaClassBytesReader classBytesReader = new IdeaClassBytesReader(compileContext, compiledClasses);
     IdeaClassLoader classLoader = new IdeaClassLoader(Thread.currentThread().getContextClassLoader(), classBytesReader);
 
-    final Transformer transformer = new Transformer("debug=" + DEBUG, classLoader, packages);
+    final QueryBeanTransformer transformer = new QueryBeanTransformer("debug=" + DEBUG, classLoader, packages);
 
     transformer.setLogout(new PrintStream(new ByteArrayOutputStream()) {
       @Override
