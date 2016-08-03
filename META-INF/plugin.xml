@@ -1,13 +1,13 @@
 <idea-plugin version="2">
   <id>org.avaje.ebean.typequery.enhancer</id>
-  <name>Ebean ORM Query Bean Enhancer</name>
-  <version>2.2.1</version>
+  <name>Deprecated (Query Bean Enhancer - uninstall me)</name>
+  <version>2.2.2</version>
   <vendor url="http://ebean-orm.github.io/">Rob Bygrave</vendor>
   <depends>com.intellij.modules.java</depends>
 
   <description><![CDATA[
-      Post-compile enhancement for Ebean ORM 'Query beans'.<br>
-      'Query beans' allow building queries using type safe query criteria.
+      Query bean enhancement is now included as part of the Ebean 4.x and 8.x enhancement plugin.<br>
+      As such, there is no need to install and use this plugin (so Deprecated).
     ]]></description>
 
   <change-notes><![CDATA[
@@ -42,8 +42,8 @@
 
   <actions>
     <action class="org.avaje.idea.typequery.plugin.ToggleEnhanceAction"
-            text="Ebean ORM Query bean Enhancement"
-            description="Query bean enhancement for Ebean ORM - http://avaje-metric.github.io"
+            text="Deprecated (Query Bean Enhancer - uninstall me)"
+            description="Query bean enhancement is now included as part of the Ebean 4.x and 8.x enhancement plugin"
             id="org.avaje.idea.typequery.plugin.ToggleEnhanceAction">
       <add-to-group anchor="after" group-id="BuildMenu" relative-to-action="Compile"/>
       <add-to-group anchor="after" group-id="ProjectViewPopupMenu" relative-to-action="Compile"/>
